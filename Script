@@ -1,14 +1,32 @@
--- Fallback for missing executor functions
+-- Ensure all needed functions exist
 if not cloneref then cloneref = function(v) return v end end
 if not getrawmetatable then getrawmetatable = function(v) return getmetatable(v) end end
 if not setreadonly then setreadonly = function(t, b) end end
-if not bit32 then bit32 = { bxor = function(a, b) return a ~ b end } end
-if not islclosure then islclosure = function(f) return type(f) == "function" end end
-if not getupvalues then getupvalues = function(f) return {} end end
-if not setupvalue then setupvalue = function(f, i, v) end end
-if not getconnections then getconnections = function(s) return {} end end
-if not isourclosure then isourclosure = function(f) return false end end
-if not getgenv then getgenv = function() return _G end end
+
+-- Safe bit32 fallback (if your executor doesn't provide it)
+if not bit32 then
+    bit32 = {
+        bxor = function(a, b)
+            local res, bit = 0, 1
+            while a > 0 or b > 0 do
+                local abit, bbit = a % 2, b % 2
+                if abit ~= bbit then res = res + bit end
+                a, b, bit = math.floor(a/2), math.floor(b/2), bit*2
+            end
+            return res
+        end
+    }
+end
+
+-- Define the key‑press helper (with a safe check for VirtualInputManager)
+local function fireParryKey()
+    local vim = game:GetService("VirtualInputManager")
+    if not vim then return end  -- if not available, do nothing
+    local key = getgenv().ParryKey or Enum.KeyCode.F
+    vim:SendKeyEvent(true, key, false, nil)
+    task.wait(0.02)
+    vim:SendKeyEvent(false, key, false, nil)
+end
 local PARRYPATCH = {
     keyTable = nil,
     transformFn = nil,
