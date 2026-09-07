@@ -1,5 +1,4 @@
-[file name]: doitenroi-wispbyte-app-paste-4bZthm-raw.txt
-[file content begin]
+
 local PARRYPATCH = {
     keyTable = nil,
     transformFn = nil,
